@@ -1,21 +1,37 @@
 import pandas as pd
+import streamlit as st
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-movies = pd.read_csv("dataset.csv")
+@st.cache_resource
+def load_data():
 
-movies["tags"] = (movies["genre"] + " " + movies["overview"]).astype(str)
-movies = movies[["id", "title", "tags"]]
+    movies = pd.read_csv("dataset.csv")
 
-movies["title"] = movies["title"].str.strip()
-movies["title_lower"] = movies["title"].str.lower()
+    movies["tags"] = (movies["genre"] + " " + movies["overview"]).astype(str)
 
-vectorizer = CountVectorizer(max_features=10000, stop_words="english")
-vectors = vectorizer.fit_transform(movies["tags"]).toarray()
+    movies = movies[["id", "title", "tags"]]
 
-similarity = cosine_similarity(vectors)
+    movies["title"] = movies["title"].str.strip()
+    movies["title_lower"] = movies["title"].str.lower()
+
+    vectorizer = CountVectorizer(
+        max_features=3000,   # reduced to avoid memory crash
+        stop_words="english"
+    )
+
+    vectors = vectorizer.fit_transform(movies["tags"]).toarray()
+
+    similarity = cosine_similarity(vectors)
+
+    return movies, similarity
+
+
+movies, similarity = load_data()
+
 
 def recommend(movie_name, top_n=5):
+
     name = movie_name.strip().lower()
 
     if name not in movies["title_lower"].values:
@@ -29,9 +45,4 @@ def recommend(movie_name, top_n=5):
         reverse=True
     )
 
-    recommendations = []
-
-    for i in scores[1:top_n+1]:
-        recommendations.append(movies.iloc[i[0]].title)
-
-    return recommendations
+    return [movies.iloc[i[0]].title for i in scores[1:top_n+1]]

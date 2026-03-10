@@ -1,7 +1,9 @@
 import streamlit as st
 from model import recommend, movies
 
-st.title("Movie Recommendation System")
+st.set_page_config(page_title="Movie Recommendation System", page_icon="🎬")
+
+st.title("🎬 Movie Recommendation System")
 
 movie = st.selectbox(
     "Select a movie",
@@ -12,7 +14,8 @@ if st.button("Recommend"):
     results = recommend(movie)
 
     if results:
+        st.subheader("Recommended Movies")
         for m in results:
-            st.write(m)
+            st.success(m)
     else:
-        st.write("Movie not found")
+        st.error("Movie not found")

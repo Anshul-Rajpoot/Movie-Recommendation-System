@@ -22,10 +22,16 @@ def recommend(movie_name, top_n=5):
         return []
 
     idx = movies[movies["title_lower"] == name].index[0]
+
     scores = sorted(
         enumerate(similarity[idx]),
         key=lambda x: x[1],
         reverse=True
     )
 
-    return [movies.iloc[i[0]].title for i in scores[1:top_n + 1]]
+    recommendations = []
+
+    for i in scores[1:top_n+1]:
+        recommendations.append(movies.iloc[i[0]].title)
+
+    return recommendations
